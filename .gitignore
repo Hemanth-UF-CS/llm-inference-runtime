@@ -1,0 +1,44 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Benchmark / profiling output
+benchmark_results.json
+*.nsys-rep
+*.ncu-rep
+*.nvvp
+*.qdrep
+
+# HuggingFace model cache (large, don't commit)
+.cache/
+~/.cache/huggingface/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / env
+.env
+.env.local
