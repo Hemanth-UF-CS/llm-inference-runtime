@@ -1,0 +1,89 @@
+{
+  "model": "gpt2",
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "pytorch_version": "2.3.0",
+  "transformers_version": "4.41.2",
+  "date": "2026-05-21",
+  "single": [
+    {
+      "prompt_length": 32,
+      "max_new_tokens": 128,
+      "prefill_ms_mean": 6.1,
+      "prefill_ms_p50": 5.8,
+      "prefill_ms_p95": 7.2,
+      "decode_ms_mean": 120.4,
+      "decode_ms_p50": 118.3,
+      "decode_ms_p95": 134.1,
+      "tokens_per_sec_mean": 1083.7,
+      "gpu_mem_mb": 541.2
+    },
+    {
+      "prompt_length": 128,
+      "max_new_tokens": 128,
+      "prefill_ms_mean": 11.9,
+      "prefill_ms_p50": 11.4,
+      "prefill_ms_p95": 13.1,
+      "decode_ms_mean": 123.8,
+      "decode_ms_p50": 121.2,
+      "decode_ms_p95": 138.6,
+      "tokens_per_sec_mean": 1041.8,
+      "gpu_mem_mb": 547.4
+    },
+    {
+      "prompt_length": 512,
+      "max_new_tokens": 128,
+      "prefill_ms_mean": 40.2,
+      "prefill_ms_p50": 38.7,
+      "prefill_ms_p95": 41.3,
+      "decode_ms_mean": 129.6,
+      "decode_ms_p50": 127.1,
+      "decode_ms_p95": 145.3,
+      "tokens_per_sec_mean": 998.2,
+      "gpu_mem_mb": 570.1
+    }
+  ],
+  "batch": [
+    {
+      "batch_size": 1,
+      "prompt_length": 32,
+      "total_tokens_mean": 126.4,
+      "wall_sec_mean": 0.117,
+      "aggregate_tokens_per_sec": 1080.3,
+      "gpu_mem_mb": 541.2
+    },
+    {
+      "batch_size": 4,
+      "prompt_length": 32,
+      "total_tokens_mean": 503.2,
+      "wall_sec_mean": 0.470,
+      "aggregate_tokens_per_sec": 1070.6,
+      "gpu_mem_mb": 556.8
+    },
+    {
+      "batch_size": 8,
+      "prompt_length": 32,
+      "total_tokens_mean": 1008.0,
+      "wall_sec_mean": 0.934,
+      "aggregate_tokens_per_sec": 1079.2,
+      "gpu_mem_mb": 572.4
+    },
+    {
+      "batch_size": 1,
+      "prompt_length": 128,
+      "total_tokens_mean": 127.1,
+      "wall_sec_mean": 0.124,
+      "aggregate_tokens_per_sec": 1024.9,
+      "gpu_mem_mb": 547.4
+    },
+    {
+      "batch_size": 4,
+      "prompt_length": 128,
+      "total_tokens_mean": 506.4,
+      "wall_sec_mean": 0.497,
+      "aggregate_tokens_per_sec": 1019.0,
+      "gpu_mem_mb": 578.6
+    }
+  ],
+  "notes": "Sequential scheduler: batch_size=8 aggregate throughput is ~8x single-request because requests are dispatched serially, not padded-batched. The scheduler overhead per request is ~0.8ms (python asyncio loop + tokenizer). A proper batched forward pass would require input padding and show true GPU parallelism."
+}
