@@ -65,57 +65,47 @@ Set `MODEL_NAME`, `DEVICE`, `MAX_BATCH_SIZE`, `KV_CACHE_CAPACITY` via environmen
 
 ## Benchmark results
 
-Measured on **RTX 3090** with **GPT-2** (124M parameters), PyTorch 2.3.0.
-10 trials after 2 warmup.  KV cache pre-populated; decode measured as time to generate
-128 new tokens from an already-prefilled prompt.
+Measured on an **RTX 4090** with **GPT-2** (124M parameters, fp16), torch 2.5.1+cu121,
+transformers 4.46.3, git `ee64ac5`. Raw numbers: `results/gpt2_rtx4090.json`,
+written by `python benchmarks/bench.py --model gpt2 --out results/gpt2_rtx4090.json`.
+Ten trials after two warmups for single requests; five trials per batch row.
 
-### Single-request latency
+### Single request (128 new tokens)
 
-| Prompt tokens | Prefill p50 | Prefill p95 | Decode p50 (128 tok) | Tokens/sec |
-|---------------|-------------|-------------|----------------------|------------|
-| 32            | 5.8 ms      | 7.2 ms      | 118 ms               | 1,085      |
-| 128           | 11.4 ms     | 13.1 ms     | 121 ms               | 1,058      |
-| 512           | 38.7 ms     | 41.3 ms     | 127 ms               | 1,008      |
+| Prompt tokens | Prefill p50 | Prefill p95 | Decode p50 | Decode p95 | Tokens/sec |
+|---:|---:|---:|---:|---:|---:|
+| 32 | 3.1 ms | 3.2 ms | 375 ms | 381 ms | 340 |
+| 128 | 3.3 ms | 3.7 ms | 377 ms | 381 ms | 339 |
+| 512 | 4.1 ms | 4.5 ms | 385 ms | 387 ms | 333 |
 
-**Why prefill scales with prompt length but decode does not**: prefill processes all
-prompt tokens in a single forward pass — it is O(seq_len) in compute.  Each decode step
-processes a single token and reuses the cached K/V state from prefill, so it is O(1) in
-prompt length.  The slight decode slowdown at longer prompts (118→127 ms) comes from
-larger `past_key_values` tensors that occupy more L2/HBM bandwidth per step.
+Prefill grows only slightly with prompt length (3.1 to 4.1 ms from 32 to 512 tokens) because one forward
+pass over a few hundred tokens barely loads the GPU. Decode is about 2.9 ms per token regardless
+of prompt length. At this model size each step is bound by Python and kernel-launch overhead in
+the Hugging Face forward pass, not by attention over the cache.
 
-### Batch throughput
+### Several requests (64 new tokens each)
 
-Requests run sequentially through the scheduler (not padded-batched); numbers reflect
-scheduler overhead and KV-cache allocation cost, not GPU parallelism.
+| Requests | Prompt tokens | Tokens generated | Wall time | Aggregate tokens/sec |
+|---:|---:|---:|---:|---:|
+| 1 | 32 | 64 | 0.19 s | 337 |
+| 4 | 32 | 256 | 0.76 s | 338 |
+| 8 | 32 | 512 | 1.52 s | 338 |
+| 1 | 128 | 64 | 0.19 s | 339 |
+| 4 | 128 | 256 | 0.76 s | 335 |
+| 8 | 128 | 512 | 1.52 s | 338 |
 
-| Batch size | Prompt tokens | Aggregate tokens/sec | Wall time |
-|------------|---------------|----------------------|-----------|
-| 1          | 32            | 1,085                | 0.12 s    |
-| 4          | 32            | 3,214                | 0.47 s    |
-| 8          | 32            | 4,891                | 0.62 s    |
-| 1          | 128           | 1,058                | 0.12 s    |
-| 4          | 128           | 2,983                | 0.43 s    |
+Aggregate throughput stays flat at about 337 tokens/sec, and wall time scales linearly with the
+number of requests. The benchmark runs requests one after another and the generator has no
+padded batched forward pass, so more concurrent requests do not use the GPU any better. That
+is the main gap to vLLM:
 
-Sub-linear scaling (4× requests → ~3×aggregate throughput) is expected: sequential
-scheduling means each request waits for the previous one's decode loop to finish before
-joining the batch.  A proper batched forward pass with padding would overlap their
-compute.  The gap between this runtime and vLLM's actual throughput is primarily:
+1. **No batched decode**: vLLM runs every active sequence's decode step in one forward pass.
+2. **No paged attention**: the KV cache is stored as dense Hugging Face tensors per request,
+   so it cannot share or pack memory in blocks.
+3. **Python overhead**: scheduling, tokenization and sampling all run in Python.
 
-1. **No padded-batch forward pass**: we run one request at a time even when multiple
-   are active; vLLM's continuous batching executes all active decode steps in one GPU
-   kernel call.
-2. **No paged attention**: KV cache is stored as dense HuggingFace tensors, preventing
-   the memory-efficient block allocation vLLM uses to avoid fragmentation.
-3. **Python overhead**: the asyncio scheduling loop, tokenization, and sampling all run
-   in Python; vLLM moves these to C++/Rust workers.
-
-### GPU memory
-
-| Prompt tokens | KV cache per entry | Peak GPU memory (gpt2) |
-|---------------|--------------------|------------------------|
-| 32            | 1.3 MB             | 541 MB                 |
-| 128           | 5.2 MB             | 547 MB                 |
-| 512           | 20.7 MB            | 570 MB                 |
+GPU memory allocated after the runs: 262 MB, mostly the fp16 weights. The KV cache costs
+12 layers x 2 (K, V) x 768 x 2 bytes = 36 KiB per token, about 4.5 MiB for a 128-token sequence.
 
 ## Key design decisions
 

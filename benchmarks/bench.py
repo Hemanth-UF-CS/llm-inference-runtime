@@ -172,7 +172,23 @@ def main():
     print(f"Loading {args.model} on {args.device}...")
     gen = TokenGenerator(model_name=args.model, device=args.device)
 
-    results = {"model": args.model, "device": args.device, "single": [], "batch": []}
+    import subprocess
+
+    import transformers
+
+    sha = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True
+    ).stdout.strip()
+    results = {
+        "model": args.model,
+        "device": args.device,
+        "gpu": torch.cuda.get_device_name() if torch.cuda.is_available() else None,
+        "torch": torch.__version__,
+        "transformers": transformers.__version__,
+        "git_sha": sha,
+        "single": [],
+        "batch": [],
+    }
 
     print("\n=== Single-request benchmarks (latency / tokens-per-sec) ===")
     for pl in args.prompt_lengths:

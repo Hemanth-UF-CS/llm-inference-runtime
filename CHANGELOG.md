@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- Benchmark tables in the README were not reproducible: `results/gpt2_rtx3090_20260521.json`
+  had fields and rows that `bench.py` does not produce. Removed it, reran `bench.py` on an
+  RTX 4090, and rebuilt the tables from `results/gpt2_rtx4090.json`.
+- `bench.py` now records GPU, torch and transformers versions and the git SHA in its output.
+
 ## [1.1.0] — 2026-05-21
 
 ### Added

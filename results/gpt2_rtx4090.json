@@ -1,0 +1,96 @@
+{
+  "model": "gpt2",
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "torch": "2.5.1+cu121",
+  "transformers": "4.46.3",
+  "git_sha": "ee64ac5",
+  "single": [
+    {
+      "prompt_length": 32,
+      "max_new_tokens": 128,
+      "prefill_ms_mean": 3.1501056626439095,
+      "prefill_ms_p50": 3.141847439110279,
+      "prefill_ms_p95": 3.206669632345438,
+      "decode_ms_mean": 376.2399163097143,
+      "decode_ms_p50": 375.35059731453657,
+      "decode_ms_p95": 381.4542267471552,
+      "tokens_per_sec_mean": 340.22739007908405,
+      "gpu_mem_mb": 261.8623046875
+    },
+    {
+      "prompt_length": 128,
+      "max_new_tokens": 128,
+      "prefill_ms_mean": 3.395676054060459,
+      "prefill_ms_p50": 3.324238583445549,
+      "prefill_ms_p95": 3.6945064552128315,
+      "decode_ms_mean": 377.6409387588501,
+      "decode_ms_p50": 377.107759937644,
+      "decode_ms_p95": 381.1138555407524,
+      "tokens_per_sec_mean": 338.9586254405178,
+      "gpu_mem_mb": 261.8623046875
+    },
+    {
+      "prompt_length": 512,
+      "max_new_tokens": 128,
+      "prefill_ms_mean": 4.190867021679878,
+      "prefill_ms_p50": 4.119516350328922,
+      "prefill_ms_p95": 4.467421770095825,
+      "decode_ms_mean": 384.43114198744297,
+      "decode_ms_p50": 384.72677767276764,
+      "decode_ms_p95": 387.34437515959144,
+      "tokens_per_sec_mean": 332.969259449562,
+      "gpu_mem_mb": 261.8623046875
+    }
+  ],
+  "batch": [
+    {
+      "batch_size": 1,
+      "prompt_length": 32,
+      "total_tokens_mean": 64,
+      "wall_sec_mean": 0.18999664038419722,
+      "aggregate_tokens_per_sec": 336.84806147405504,
+      "gpu_mem_mb": 261.8623046875
+    },
+    {
+      "batch_size": 1,
+      "prompt_length": 128,
+      "total_tokens_mean": 64,
+      "wall_sec_mean": 0.18883759789168836,
+      "aggregate_tokens_per_sec": 338.91555873692323,
+      "gpu_mem_mb": 261.8623046875
+    },
+    {
+      "batch_size": 4,
+      "prompt_length": 32,
+      "total_tokens_mean": 256,
+      "wall_sec_mean": 0.7568416249006986,
+      "aggregate_tokens_per_sec": 338.24778074750907,
+      "gpu_mem_mb": 261.8623046875
+    },
+    {
+      "batch_size": 4,
+      "prompt_length": 128,
+      "total_tokens_mean": 256,
+      "wall_sec_mean": 0.7645939692854882,
+      "aggregate_tokens_per_sec": 334.8182306999251,
+      "gpu_mem_mb": 261.8623046875
+    },
+    {
+      "batch_size": 8,
+      "prompt_length": 32,
+      "total_tokens_mean": 512,
+      "wall_sec_mean": 1.5155144993215799,
+      "aggregate_tokens_per_sec": 337.83906404669625,
+      "gpu_mem_mb": 261.8623046875
+    },
+    {
+      "batch_size": 8,
+      "prompt_length": 128,
+      "total_tokens_mean": 512,
+      "wall_sec_mean": 1.5164433885365725,
+      "aggregate_tokens_per_sec": 337.6321225509777,
+      "gpu_mem_mb": 261.8623046875
+    }
+  ]
+}
